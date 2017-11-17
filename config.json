@@ -1,0 +1,16 @@
+{
+        "production":   {
+                        "connectionString": "mongodb://ftc.finconsgroup.com:27017/tcf",
+                        "apiUrl": "http://ftc.finconsgroup.com:4000",
+                        "secret": "TciFincons2017" ,
+                        "port": 80 
+                        },
+        "dev":          {
+                        "connectionString": "mongodb://localhost:27017/tcf",
+                        "apiUrl": "http://localhost:4000",
+                        "secret": "TciFincons2017",
+                        "port"  : 4000
+                        }
+    
+}
+
