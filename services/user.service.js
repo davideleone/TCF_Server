@@ -240,10 +240,10 @@ function insOrUpdUser(userParam) {
     // set user object to userParam without the cleartext password
     var user = _.omit(userParam, 'password');
     
-   // mongoose.set('debug', true);
+    // mongoose.set('debug', true);
     // add hashed password to user object
-    //user.password = bcrypt.hashSync(userParam.password, 10);
-    console.log(user);
+    user.password = bcrypt.hashSync(userParam.password, 10);
+
     let newUser = new User(user);
 
     var query = {'_id':newUser._id};
