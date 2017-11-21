@@ -8,7 +8,7 @@ routerUser.post('/authenticate', authenticate);
 routerUser.post('/userChangeEmail', changeUserEmail);
 routerUser.post('/userChangePwd', changeUserPwd);
 routerUser.get('/userByManager/:userLogged', getUsersByManager);
-routerUser.post('/insOrUpdUtente', insOrUpdUtente); 			//CREATE-UPDATE
+routerUser.post('/insOrUpdUser', insOrUpdUser); 			//CREATE-UPDATE
 
 
 //SECURITY SECTION - START
@@ -65,9 +65,9 @@ function getUsersByManager(req, res){
 	});
 };
 
-function insOrUpdUtente(req, res){
+function insOrUpdUser(req, res){
 	userService.insOrUpdUser(req.body).then(function(msg){
-		console.log("user.controller.insOrUpdUtente: ok");
+		console.log("user.controller.insOrUpdUser: ok");
 		res.send(msg);
 	}).catch(function (err) {
             res.status(400).send(err);

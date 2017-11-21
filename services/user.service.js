@@ -9,7 +9,6 @@ var Q = require('q');
 var serviceUser = {};
 
 const User = require('../models/user.js');
-const Profilo = require('../models/profile.js');
 const Cliente = require('../models/cliente.js');
 
 serviceUser.authenticate = authenticate;
@@ -87,7 +86,7 @@ function getUsersByManager(userLogged) {
                     $filter: {
                         input: '$clienti',
                         as: 'item',
-                        cond: {$eq: ['$$item.id_profilo', 'AP']} 
+                        cond: {$eq: ['$$item.profilo', 'AP']} 
                     }	
                 }
             }
@@ -106,7 +105,7 @@ function getUsersByManager(userLogged) {
         {
             $project:{
                 isAdmin: '$isAdmin',
-                id_cliente: '$clienti.id_cliente',
+                cliente: '$clienti.cliente',
             }	
         },
         {
@@ -117,7 +116,7 @@ function getUsersByManager(userLogged) {
                 },
                 clienti : {
                     $push : 
-                        '$id_cliente'
+                        '$cliente'
                 }
             }
         }
@@ -238,20 +237,23 @@ function insOrUpdUser(userParam) {
     console.log("addUser "+userParam._id)
     var deferred = Q.defer();
     // set user object to userParam without the cleartext password
-    var user = _.omit(userParam, 'password');
     
+    let newUser = new User(userParam);
     // mongoose.set('debug', true);
     // add hashed password to user object
-    user.password = bcrypt.hashSync(userParam.password, 10);
-
-    let newUser = new User(user);
-
-    var query = {'_id':newUser._id};
-    User.findOneAndUpdate(query, newUser, {upsert:true}, function(err, doc){
+    var query;
+    if(newUser._id != null){
+        query = {'_id':newUser._id};          
+    }else{
+        newUser.password = bcrypt.hashSync(userParam.password, 10);
+    }   
+    
+    User.findOneAndUpdate(query, newUser, {upsert:true}).populate("clienti.cliente")
+    .exec((err, user) => {
         if (err){
             deferred.reject(err.name + ': ' + err.message);
         }else{
-             deferred.resolve({msg: 'User add successfully'});
+             deferred.resolve(user._doc);
         }
     });
      return deferred.promise;
