@@ -241,20 +241,20 @@ function insOrUpdUser(userParam) {
     let newUser = new User(userParam);
     // mongoose.set('debug', true);
     // add hashed password to user object
-    var query;
-    if(newUser._id != null){
-        query = {'_id':newUser._id};          
-    }else{
+
+    var query = {'_id':newUser._id};       
+    if (newUser.password!= null && !newUser.password.startsWith('$2a')) //password ancora da cifrare   
         newUser.password = bcrypt.hashSync(userParam.password, 10);
-    }   
     
-    User.findOneAndUpdate(query, newUser, {upsert:true}).populate("clienti.cliente")
-    .exec((err, user) => {
-        if (err){
-            deferred.reject(err.name + ': ' + err.message);
-        }else{
-             deferred.resolve(user._doc);
-        }
+    User.findOneAndUpdate(query, newUser, {new: true, upsert:true})
+        .populate({ path:"clienti.cliente", 
+                    model: Cliente })
+        .exec((err, user) => {
+            if (err){
+                deferred.reject(err.name + ': ' + err.message);
+            }else{
+                deferred.resolve(user);
+            }
     });
      return deferred.promise;
 }
