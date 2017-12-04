@@ -12,8 +12,8 @@
                         "port"  : 4000
                         },
         "uat":          {
-                        "connectionString": "mongodb://ftc.finconsgroup.com:27017/tcf_uat",
-                        "apiUrl": "http://ftc.finconsgroup.com:4100",
+                        "connectionString": "mongodb://localhost:27017/tcf_uat",
+                        "apiUrl": "http://localhost:4100",
                         "secret": "TciFincons2017" ,
                         "port": 80 
                         },
