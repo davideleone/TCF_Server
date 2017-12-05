@@ -13,7 +13,7 @@
                         },
         "uat":          {
                         "connectionString": "mongodb://localhost:27017/tcf",
-                        "apiUrl": "http://localhost:4100",
+                        "apiUrl": "http://localhost:4100/uat",
                         "secret": "TciFincons2017",
                         "port"  : 4100
                 }
