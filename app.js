@@ -17,18 +17,22 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 //LOGGING CONFIGURATION - START
-var JL = require('jsnlog').JL;
+console.log("start conf jsnloghost");
+//var JL_host = require('jsnlog');
+console.log("end conf jsnloghost");
+//var JL = JL_host.JL;
+console.log("end conf jsnlog");
 var winston = require('winston');
-var jsnlog_nodejs = require('jsnlog-nodejs').jsnlog_nodejs;
+//var jsnlog_nodejs = require('jsnlog-nodejs').jsnlog_nodejs;
 
 require('winston-mongodb').MongoDB;
 var mongo_appender = new winston.transports.MongoDB( { db: config.connectionString, collection: 'log', level: 'info' });
-var consoleAppender = JL.createConsoleAppender('consoleAppender');
-JL().setOptions({ "appenders": [mongo_appender, consoleAppender] });
+//var consoleAppender = JL.createConsoleAppender('consoleAppender');
+//JL().setOptions({ "appenders": [mongo_appender, consoleAppender] });
 
 
 app.post('/tcf/api/jsnlog.logger', function (req, res) { 
-  jsnlog_nodejs(JL, req.body);
+  //jsnlog_nodejs(JL, req.body);
   // Send empty response. This is ok, because client side jsnlog does not use response from server.
   res.send(''); 
 });
@@ -92,5 +96,5 @@ app.use('/tcf/api/clienteController', require('./controllers/cliente.controller'
 // start server
 var port = config.port;
 var server = app.listen(port, function () {
-    JL().info('Server listening on port ' + port);
+    //JL().info('Server listening on port ' + port);
 });
