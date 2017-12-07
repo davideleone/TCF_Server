@@ -19,6 +19,10 @@ const ClienteSchema = mongoose.Schema({
 				type: String,
 				required: true
 			},
+			nome_ambito: {
+				type: String,
+				required: false
+			},
 			data_inizio_validita: {
 				type: Date,
 				required: false,
