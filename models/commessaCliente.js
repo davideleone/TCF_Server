@@ -6,7 +6,15 @@ const CommessaClienteSchema = mongoose.Schema({
 		type: String,
 		required: true
 	},
+	nome_cliente: {
+		type: String,
+		required: true
+	},
 	id_commessa_fnc : {
+		type: String,
+		required: true
+	},
+	nome_commessa_fnc : {
 		type: String,
 		required: true
 	},

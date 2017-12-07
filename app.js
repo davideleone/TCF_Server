@@ -80,6 +80,7 @@ app.use('/tcf/api/consuntivoController/CRUD',       RouterFactory.create({path: 
 app.use('/tcf/api/meseConsuntivoController/CRUD',   RouterFactory.create({path: "", model: require('./models/meseConsuntivo.js')}));
 app.use('/tcf/api/clienteController/CRUD',          RouterFactory.create({path: "", model: require('./models/cliente.js')}));
 app.use('/tcf/api/commessaClienteController/CRUD',  RouterFactory.create({path: "", model: require('./models/commessaCliente.js')}));
+app.use('/tcf/api/commessaFinconsController/CRUD',  RouterFactory.create({path: "", model: require('./models/commessaFincons.js')}));
 app.use('/tcf/api/menuController/CRUD',             RouterFactory.create({path: "", model: require('./models/menu.js')}));
 
 //STATIC CUSTOM ROUTES
