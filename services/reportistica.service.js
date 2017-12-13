@@ -15,8 +15,9 @@ module.exports = serviceReportistica;
 function getReportistica(reportisticaParam, res){
 	var deferred = Q.defer();
 
+	//https://github.com/guyonroche/exceljs
 	var workbook = new Excel.Workbook();
-	var sheet = workbook.addWorksheet("My Sheet");
+	var sheet = workbook.addWorksheet("Report 1");
 	
 
 	res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
