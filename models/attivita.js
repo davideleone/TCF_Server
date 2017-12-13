@@ -50,7 +50,7 @@ const AttivitaSchema = mongoose.Schema({
 		type: Number,
 		required: false
 	},
-	budget_gg: {
+	budget_ore: {
 		type: Number,
 		required: true
 	},
