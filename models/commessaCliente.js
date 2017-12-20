@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const CommessaClienteSchema = mongoose.Schema({
 
 	id_cliente: {
-		type: String,
+		type: mongoose.Schema.Types.ObjectId, ref: 'Cliente',
 		required: true
 	},
 	nome_cliente: {
@@ -11,7 +11,7 @@ const CommessaClienteSchema = mongoose.Schema({
 		required: true
 	},
 	id_commessa_fnc : {
-		type: String,
+		type: mongoose.Schema.Types.ObjectId, ref: 'CommessaFincons',
 		required: true
 	},
 	nome_commessa_fnc : {

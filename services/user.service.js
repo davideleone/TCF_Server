@@ -2,6 +2,7 @@ var config = require('config.json')[process.env.NODE_ENV || 'dev'];
 var _ = require('lodash');
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
+const mongoose = require('mongoose');
 
 var Q = require('q');
 
@@ -25,7 +26,7 @@ function authenticate(username, password) {
     console.log("richiesto username " + username)
     var deferred = Q.defer();
     var userSelected = {};
-    User.findById(username)
+    User.findOne({"username":{$eq : username}})
         .populate("clienti.cliente")
         .exec((err, user) => {
         if (err) {

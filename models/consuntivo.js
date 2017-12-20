@@ -7,11 +7,11 @@ const ConsuntivoSchema = mongoose.Schema({
 		required: true
 	},
 	id_utente: {
-		type: String,
+		type: mongoose.Schema.Types.ObjectId, ref: 'User',
 		required: true
 	},
 	id_cliente: {
-		type: String,
+		type: mongoose.Schema.Types.ObjectId, ref: 'Cliente',
 		required: true
 	},
 	nome_cliente: {
@@ -35,7 +35,7 @@ const ConsuntivoSchema = mongoose.Schema({
 		required: false
 	},
 	id_attivita: {
-		type: String,
+		type: mongoose.Schema.Types.ObjectId, ref: 'Attivita',
 		required: true
 	},
 	nome_attivita: {

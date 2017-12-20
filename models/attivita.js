@@ -11,7 +11,7 @@ const AttivitaSchema = mongoose.Schema({
 		required: true
 	},
 	id_commessa_cliente: {
-		type: String,
+		type: mongoose.Schema.Types.ObjectId, ref: 'CommessaCliente',
 		required: true
 	},
 	nome_commessa_cliente: {
@@ -19,7 +19,7 @@ const AttivitaSchema = mongoose.Schema({
 		required: true
 	},
 	id_cliente: {
-		type: String,
+		type: mongoose.Schema.Types.ObjectId, ref: 'Cliente',
 		required: true
 	},
 	nome_cliente: {
