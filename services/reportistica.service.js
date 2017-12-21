@@ -1,7 +1,7 @@
 var _ = require('lodash');
 var Q = require('q');
 var dateFormat = require('dateformat');
-var excelbuilder = require('msexcel-builder');
+var Excel = require('exceljs');
 
 var serviceReportistica = {};
 
@@ -12,26 +12,22 @@ serviceReportistica.getRowsForExcel = getRowsForExcel;
 
 module.exports = serviceReportistica;
 
-function getReportistica(reportisticaParam){
+function getReportistica(reportisticaParam, res){
 	var deferred = Q.defer();
 
-	var workbook = excelbuilder.createWorkbook("C:/Users/luca.massa/Desktop/", "file.xlsx");
+	//https://github.com/guyonroche/exceljs
+	var workbook = new Excel.Workbook();
+	var sheet = workbook.addWorksheet("Report 1");
+	
 
-	// Create a new worksheet with 10 columns and 12 rows 
-	var sheet1 = workbook.createSheet('sheet1', 10, 12);
-
-	// Fill some data 
-	sheet1.set(1, 1, 'I am title');
-	for (var i = 2; i < 5; i++)
-	  sheet1.set(i, 1, 'test'+i);
-
-	// Save it 
-	workbook.save(function(ok){
-	  if (!ok) 
-		  deferred.reject({msg: 'Error. XLS doesn\'t created'});
-	  else
-		deferred.resolve({msg: 'XLS created successfully'});
-	});
+	res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	res.setHeader("Content-Disposition", "attachment; filename=" + "Report.xlsx");
+	workbook.xlsx.write(res)
+		.then(function(){
+			res.end();
+			deferred.resolve({msg: 'XLS created successfully'});
+		});
+	
 	return deferred.promise;
 }
 
