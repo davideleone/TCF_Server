@@ -21,6 +21,7 @@ serviceConsuntivo.getConsuntiviBetweenDates = getConsuntiviBetweenDates;
 serviceConsuntivo.getConsuntiviUtente = getConsuntiviUtente;
 serviceConsuntivo.insOrUpdConsuntiviUtente = insOrUpdConsuntiviUtente;
 serviceConsuntivo.delConsuntiviUtente =  delConsuntiviUtente;
+serviceConsuntivo.getConsuntivoForExcel = getConsuntivoForExcel;
 
 module.exports = serviceConsuntivo;
 /*
@@ -235,5 +236,98 @@ function delConsuntiviUtente(id_user,
     });
      
     return deferred.promise;
-l}
+}
+
+function getConsuntivoForExcel() {
+    var deferred = Q.defer();
+    let consuntivo = new Consuntivo();
+    
+    mongoose.set('debug', true);
+	var query = [
+		// Stage 1
+		{
+			$lookup: {
+			    "from" : mongoose.model('Attivita').collection.collectionName,
+			    "localField" : "id_attivita",
+			    "foreignField" : "_id",
+			    "as" : "attivita"
+			}
+		},
+
+		// Stage 2
+		{
+			$unwind: {
+			    path : "$attivita",
+			    preserveNullAndEmptyArrays : false // optional
+			}
+		},
+
+		// Stage 3
+		{
+			$lookup: {
+			    "from" : mongoose.model('CommessaCliente').collection.collectionName,
+			    "localField" : "attivita.id_commessa_cliente",
+			    "foreignField" : "_id",
+			    "as" : "commessa_cliente"
+			}
+		},
+
+		// Stage 4
+		{
+			$unwind: {
+			    path : "$commessa_cliente",
+			    preserveNullAndEmptyArrays : false // optional
+			}
+		},
+
+		// Stage 5
+		{
+			$lookup: {
+			    "from" : mongoose.model('CommessaFincons').collection.collectionName,
+			    "localField" : "commessa_cliente.id_commessa_fnc",
+			    "foreignField" : "_id",
+			    "as" : "commessa_fincons"
+			}
+		},
+
+		// Stage 6
+		{
+			$unwind: {
+			    path : "$commessa_fincons",
+			    preserveNullAndEmptyArrays : false // optional
+			}
+		},
+
+		// Stage 7
+		{
+			$project: {	nome_cliente: "$nome_cliente",
+			  	nome_ambito: "$nome_ambito",
+			  	nome_macro_area: "$nome_macro_area",
+			  	nome_attivita: "$attivita.nome_attivita",
+			  	codice_commessa_cliente: "$commessa_cliente.nome_commessa_cliente",
+			  	nome_commessa_cliente: "$commessa_cliente.nome_commessa_cliente",
+				codice_attivita: "$attivita.codice_attivita",
+				codice_commessa_fnc: "commessa_fincons.codice_commessa",
+				nome_commessa_fnc: "commessa_fincons.nome_commessa",
+				descrizione_attivita: "$attivita.descrizione_attivita",
+				stato_attivita: "$attivita.stato_attivita",
+				budget_ore: "$attivita.budget_ore",
+				data_inizio: "$attivita.data_inizio_validita",
+				data_fine: "$attivita.data_fine_validita"
+			}
+		}
+
+	];
+
+	Consuntivo.aggregate(query).exec((err, consuntiviUtente)=> {
+        if (err) {
+            deferred.reject(err.name + ': ' + err.message);
+        } else {            
+            deferred.resolve(consuntiviUtente);
+        }
+
+    });
+
+    return deferred.promise;
+}
 
