@@ -7,6 +7,12 @@ var bodyParser = require('body-parser');
 var expressJwt = require('express-jwt');
 var config = require('config.json')[process.env.NODE_ENV || 'dev'];
 var RouterFactory = require('node-express-crud-router').RouterFactory;
+if(process.env.NODE_ENV=='custom'){
+	config.connectionString=process.env.MONGODB_HOST;
+	config.port = process.env.PORT;
+	config.secret = process.env.SECRET;
+	config.apiUrl = process.env.APIURL;
+}
 
 mongoose.connect(config.connectionString);
 

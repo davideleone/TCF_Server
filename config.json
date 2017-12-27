@@ -16,7 +16,8 @@
                         "apiUrl": "http://localhost:4100/uat",
                         "secret": "TciFincons2017",
                         "port"  : 4100
-                }
+                },
+	"custom":  {"code_defined": true }
     
 }
 
