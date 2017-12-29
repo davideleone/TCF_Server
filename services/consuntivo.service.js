@@ -155,7 +155,7 @@ function getConsuntiviUtente(id_user, month, year) {
 			$match: {
 				"month": new Number(month).valueOf(),
 				"year": new Number(year).valueOf(),
-				"user": id_user
+				"user": mongoose.Types.ObjectId(id_user)
 			}
         },
         {
