@@ -11,7 +11,8 @@ routerConsuntivo.post('/consuntiviTraDate', getConsuntiviBetweenDates);
 routerConsuntivo.post('/consuntiviUtente', insOrUpdConsuntiviUtente); 			//CREATE-UPDATE
 routerConsuntivo.get('/consuntiviUtente/:id_user/:month/:year', getConsuntiviUtente);  //READ
 routerConsuntivo.delete('/consuntiviUtente/:id_user/:id_macro_area/:id_ambito/:id_attivita/:id_tipo_deliverable', delConsuntiviUtente);				//DELETE
-routerConsuntivo.get('/consuntivoForExcel', getConsuntivoForExcel);
+routerConsuntivo.get('/reportAttivita/:id_cliente', getReportAttivita);
+routerConsuntivo.get('/reportTotale/:id_cliente', getReportTotale);
 
 function addMeseConsuntivo(req, res){
 	consuntivoService.addMeseConsuntivo(req.body).then(function(){
@@ -93,8 +94,16 @@ function delConsuntiviUtente(req, res){
 	});	
 };
 
-function getConsuntivoForExcel(req, res){
-	consuntivoService.getConsuntivoForExcel(req, res).then(function(msg){
+function getReportTotale(req, res){
+	consuntivoService.getReportTotale(req.params.id_cliente, res).then(function(msg){
+		res.send(msg);
+	}).catch(function(err){
+		res.status(400).send(err);
+	});
+};
+
+function getReportAttivita(req, res){
+	consuntivoService.getReportAttivita(req.params.id_cliente, res).then(function(msg){
 		res.send(msg);
 	}).catch(function(err){
 		res.status(400).send(err);

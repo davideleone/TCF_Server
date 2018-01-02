@@ -20,8 +20,9 @@ serviceConsuntivo.getConsuntivoCliente = getConsuntivoCliente;
 serviceConsuntivo.getConsuntiviBetweenDates = getConsuntiviBetweenDates;
 serviceConsuntivo.getConsuntiviUtente = getConsuntiviUtente;
 serviceConsuntivo.insOrUpdConsuntiviUtente = insOrUpdConsuntiviUtente;
-serviceConsuntivo.delConsuntiviUtente =  delConsuntiviUtente;
-serviceConsuntivo.getConsuntivoForExcel = getConsuntivoForExcel;
+serviceConsuntivo.delConsuntiviUtente = delConsuntiviUtente;
+serviceConsuntivo.getReportAttivita = getReportAttivita;
+serviceConsuntivo.getReportTotale = getReportTotale;
 
 module.exports = serviceConsuntivo;
 /*
@@ -138,35 +139,35 @@ function getConsuntiviUtente(id_user, month, year) {
     var deferred = Q.defer();
     console.log("user: " + id_user + " month: " + month + "/" + year);
     let consuntivo = new Consuntivo();
-    
+
     mongoose.set('debug', true);
-	var query = [
-		{
-			$project:
-			{
-				doc: "$$ROOT",
-				year: { $cond: ["$data_consuntivo", { $year: "$data_consuntivo" }, -1] },
-				month: { $cond: ["$data_consuntivo", { $month: "$data_consuntivo" }, -1] },
-				day: { $cond: ["$data_consuntivo", { $dayOfMonth: "$data_consuntivo" }, -1] },
-				user: "$id_utente"
-			}
-		},
-		{
-			$match: {
-				"month": new Number(month).valueOf(),
-				"year": new Number(year).valueOf(),
-				"user": id_user
-			}
+    var query = [
+        {
+            $project:
+            {
+                doc: "$$ROOT",
+                year: { $cond: ["$data_consuntivo", { $year: "$data_consuntivo" }, -1] },
+                month: { $cond: ["$data_consuntivo", { $month: "$data_consuntivo" }, -1] },
+                day: { $cond: ["$data_consuntivo", { $dayOfMonth: "$data_consuntivo" }, -1] },
+                user: "$id_utente"
+            }
+        },
+        {
+            $match: {
+                "month": new Number(month).valueOf(),
+                "year": new Number(year).valueOf(),
+                "user": id_user
+            }
         },
         {
             $replaceRoot: { newRoot: "$doc" }
         },
-	];
+    ];
 
-	return Consuntivo.aggregate(query).exec((err, consuntiviUtente)=> {
+    return Consuntivo.aggregate(query).exec((err, consuntiviUtente) => {
         if (err) {
             deferred.reject(err.name + ': ' + err.message);
-        } else {            
+        } else {
             deferred.resolve(consuntiviUtente);
         }
 
@@ -184,26 +185,26 @@ function insOrUpdConsuntiviUtente(consuntiviUtente) {
     var query;
     //transaction.initModel("Consuntivo", this.Consuntivo);
     mongoose.set('debug', true);
-    
-    for (var i = 0; i < consuntiviUtente.body.length; i++) {   
+
+    for (var i = 0; i < consuntiviUtente.body.length; i++) {
         var id = consuntiviUtente.body[i]._id;
-        var object = _.omit(consuntiviUtente.body[i], '_id');  
-        object = _.omit(consuntiviUtente.body[i], '__v');    
-        if(id != null){            
-            transaction.update(Consuntivo, {_id: id}, object).options({upsert: true});
-        }else{
+        var object = _.omit(consuntiviUtente.body[i], '_id');
+        object = _.omit(consuntiviUtente.body[i], '__v');
+        if (id != null) {
+            transaction.update(Consuntivo, { _id: id }, object).options({ upsert: true });
+        } else {
             transaction.save(Consuntivo, object);
         }
     }
 
-    transaction.run({useMongoose: true}).then(function(results){
-            console.log(results[0].result);
-            //deferred.resolve(results[0].result);
-            deferred.resolve({msg: 'ConsuntiviUtente add successfully'});
-        })
-        .catch(function(err){
-        // Everything has been rolled back.			
-        // log the error which caused the failure
+    transaction.run({ useMongoose: true }).then(function (results) {
+        console.log(results[0].result);
+        //deferred.resolve(results[0].result);
+        deferred.resolve({ msg: 'ConsuntiviUtente add successfully' });
+    })
+        .catch(function (err) {
+            // Everything has been rolled back.			
+            // log the error which caused the failure
             console.log(err);
             deferred.reject(err);
         });
@@ -212,120 +213,261 @@ function insOrUpdConsuntiviUtente(consuntiviUtente) {
 }
 
 //OK
-function delConsuntiviUtente(id_user, 
-                             id_macro_area, 
-                             id_ambito, 
-                             id_attivita,
-                             id_tipo_deliverable) {
+function delConsuntiviUtente(id_user,
+    id_macro_area,
+    id_ambito,
+    id_attivita,
+    id_tipo_deliverable) {
     var deferred = Q.defer();
     console.log("delConsuntivi");
     let consuntivo = new Consuntivo();
- 
+
     mongoose.set('debug', true);
-    consuntivo.remove({ "id_user": new Number(id_user), 
-                        "id_macro_area": new Number(id_macro_area), 
-                        "id_ambito": new Number(id_ambito), 
-                        "id_tipo_deliverable": new Number(id_tipo_deliverable) }, function(err, doc) {
+    consuntivo.remove({
+        "id_user": new Number(id_user),
+        "id_macro_area": new Number(id_macro_area),
+        "id_ambito": new Number(id_ambito),
+        "id_tipo_deliverable": new Number(id_tipo_deliverable)
+    }, function (err, doc) {
 
         if (err) {
             deferred.reject(err.name + ': ' + err.message);
-        } else {      
+        } else {
             deferred.resolve({ msg: 'Consuntivi deleted successfully' });
         }
 
     });
-     
+
     return deferred.promise;
 }
 
-function getConsuntivoForExcel() {
+function getReportAttivita(id_cliente) {
     var deferred = Q.defer();
     let consuntivo = new Consuntivo();
-    
+
     mongoose.set('debug', true);
-	var query = [
-		// Stage 1
-		{
-			$lookup: {
-			    "from" : mongoose.model('Attivita').collection.collectionName,
-			    "localField" : "id_attivita",
-			    "foreignField" : "_id",
-			    "as" : "attivita"
-			}
-		},
+    var query = [
+        // Stage 1
+        {
+            $match: {
+                "id_cliente": mongoose.Types.ObjectId(id_cliente)
+            }
+        },
+        {
+            $lookup: {
+                "from": mongoose.model('Attivita').collection.collectionName,
+                "localField": "id_attivita",
+                "foreignField": "_id",
+                "as": "attivita"
+            }
+        },
 
-		// Stage 2
-		{
-			$unwind: {
-			    path : "$attivita",
-			    preserveNullAndEmptyArrays : false // optional
-			}
-		},
+        // Stage 2
+        {
+            $unwind: {
+                path: "$attivita",
+                preserveNullAndEmptyArrays: false // optional
+            }
+        },
 
-		// Stage 3
-		{
-			$lookup: {
-			    "from" : mongoose.model('CommessaCliente').collection.collectionName,
-			    "localField" : "attivita.id_commessa_cliente",
-			    "foreignField" : "_id",
-			    "as" : "commessa_cliente"
-			}
-		},
+        // Stage 3
+        {
+            $lookup: {
+                "from": mongoose.model('CommessaCliente').collection.collectionName,
+                "localField": "attivita.id_commessa_cliente",
+                "foreignField": "_id",
+                "as": "commessa_cliente"
+            }
+        },
 
-		// Stage 4
-		{
-			$unwind: {
-			    path : "$commessa_cliente",
-			    preserveNullAndEmptyArrays : false // optional
-			}
-		},
+        // Stage 4
+        {
+            $unwind: {
+                path: "$commessa_cliente",
+                preserveNullAndEmptyArrays: false // optional
+            }
+        },
 
-		// Stage 5
-		{
-			$lookup: {
-			    "from" : mongoose.model('CommessaFincons').collection.collectionName,
-			    "localField" : "commessa_cliente.id_commessa_fnc",
-			    "foreignField" : "_id",
-			    "as" : "commessa_fincons"
-			}
-		},
+        // Stage 5
+        {
+            $lookup: {
+                "from": mongoose.model('CommessaFincons').collection.collectionName,
+                "localField": "commessa_cliente.id_commessa_fnc",
+                "foreignField": "_id",
+                "as": "commessa_fincons"
+            }
+        },
 
-		// Stage 6
-		{
-			$unwind: {
-			    path : "$commessa_fincons",
-			    preserveNullAndEmptyArrays : false // optional
-			}
-		},
+        // Stage 6
+        {
+            $unwind: {
+                path: "$commessa_fincons",
+                preserveNullAndEmptyArrays: false // optional
+            }
+        },
+        // Stage 7
+        {
+            $project: {
+                nome_cliente: "$nome_cliente",
+                nome_ambito: "$nome_ambito",
+                nome_macro_area: "$nome_macro_area",
+                nome_attivita: "$attivita.nome_attivita",
+                codice_commessa_cliente: "$commessa_cliente.codice_commessa",
+                nome_commessa_cliente: "$commessa_cliente.nome_commessa",
+                codice_attivita: "$attivita.codice_attivita",
+                codice_commessa_fnc: "$commessa_fincons.codice_commessa",
+                nome_commessa_fnc: "$commessa_fincons.nome_commessa",
+                descrizione_attivita: "$attivita.descrizione_attivita",
+                stato_attivita: "$attivita.stato_attivita",
+                budget_ore: "$attivita.budget_ore",
+                data_inizio: "$attivita.data_inizio_validita",
+                data_fine: "$attivita.data_fine_validita"
+            }
+        },
 
-		// Stage 7
-		{
-			$project: {	nome_cliente: "$nome_cliente",
-			  	nome_ambito: "$nome_ambito",
-			  	nome_macro_area: "$nome_macro_area",
-			  	nome_attivita: "$attivita.nome_attivita",
-			  	codice_commessa_cliente: "$commessa_cliente.nome_commessa_cliente",
-			  	nome_commessa_cliente: "$commessa_cliente.nome_commessa_cliente",
-				codice_attivita: "$attivita.codice_attivita",
-				codice_commessa_fnc: "commessa_fincons.codice_commessa",
-				nome_commessa_fnc: "commessa_fincons.nome_commessa",
-				descrizione_attivita: "$attivita.descrizione_attivita",
-				stato_attivita: "$attivita.stato_attivita",
-				budget_ore: "$attivita.budget_ore",
-				data_inizio: "$attivita.data_inizio_validita",
-				data_fine: "$attivita.data_fine_validita"
-			}
-		}
+    ];
 
-	];
-
-	Consuntivo.aggregate(query).exec((err, consuntiviUtente)=> {
+    Consuntivo.aggregate(query).exec((err, consuntiviUtente) => {
         if (err) {
             deferred.reject(err.name + ': ' + err.message);
-        } else {            
+        } else {
             deferred.resolve(consuntiviUtente);
         }
 
+    });
+
+    return deferred.promise;
+}
+
+
+
+function getReportTotale(id_cliente) {
+    var deferred = Q.defer();
+    let consuntivo = new Consuntivo();
+
+    mongoose.set('debug', true);
+    var query = [
+        // Stage 1
+        {
+            $match: {
+                "id_cliente": mongoose.Types.ObjectId(id_cliente)
+            }
+        },
+        {
+            $lookup: {
+                "from": mongoose.model('User').collection.collectionName,
+                "localField": "id_utente",
+                "foreignField": "_id",
+                "as": "utente"
+            }
+        },
+        // Stage 2
+        {
+            $unwind: {
+                path: "$utente",
+                preserveNullAndEmptyArrays: false // optional
+            }
+        },
+        // Stage 3
+        {
+            $lookup: {
+                "from": mongoose.model('Attivita').collection.collectionName,
+                "localField": "id_attivita",
+                "foreignField": "_id",
+                "as": "attivita"
+            }
+        },
+        // Stage 4
+        {
+            $unwind: {
+                path: "$attivita",
+                preserveNullAndEmptyArrays: false // optional
+            }
+        },
+        // Stage 5
+        {
+            $lookup: {
+                "from": mongoose.model('CommessaCliente').collection.collectionName,
+                "localField": "attivita.id_commessa_cliente",
+                "foreignField": "_id",
+                "as": "commessa_cliente"
+            }
+        },
+        // Stage 6
+        {
+            $unwind: {
+                path: "$commessa_cliente",
+                preserveNullAndEmptyArrays: false // optional
+            }
+        },
+        // Stage 7
+        {
+            $lookup: {
+                "from": mongoose.model('CommessaFincons').collection.collectionName,
+                "localField": "commessa_cliente.id_commessa_fnc",
+                "foreignField": "_id",
+                "as": "commessa_fincons"
+            }
+        },
+        // Stage 8
+        {
+            $unwind: {
+                path: "$commessa_fincons",
+                preserveNullAndEmptyArrays: false // optional
+            }
+        },
+        {
+            $group: {
+                "_id": {
+                    id_attivita: "$id_attivita",
+                    id_tipo_deliverable: "$id_tipo_deliverable",
+                    id_utente: "$id_utente",
+                    nome_cliente: "$nome_cliente",
+                    nome_ambito: "$nome_ambito",
+                    nome_macro_area: "$nome_macro_area",
+                    codice_commessa_cliente: "$commessa_cliente.codice_commessa",
+                    nome_commessa_cliente: "$commessa_cliente.nome_commessa",
+                    codice_attivita: "$attivita.codice_attivita",
+                    codice_commessa_fnc: "$commessa_fincons.codice_commessa",
+                    nome_attivita: "$attivita.nome_attivita",
+                    budget_gg: "$commessa_cliente.budget_gg",
+                    type_of_work: "$nome_tipo_deliverable",
+                    cognome: "$utente.cognome",
+                    nome: "$utente.nome",
+                    desc_consuntivo: "$note",
+                },
+                tot_ore: { $sum: "$ore" }
+            }
+        },
+        {
+            $project: {
+                _id : 0 ,
+                nome_cliente: "$_id.nome_cliente",
+                nome_ambito: "$_id.nome_ambito",
+                nome_macro_area: "$_id.nome_macro_area",
+                codice_commessa_cliente: "$_id.codice_commessa_cliente",
+                nome_commessa_cliente: "$_id.nome_commessa_cliente",
+                codice_attivita: "$_id.codice_attivita",
+                codice_commessa_fnc: "$_id.codice_commessa_fnc",
+                nome_attivita: "$_id.nome_attivita",
+                budget_gg: "$_id.budget_gg",
+                type_of_work: "$_id.type_of_work",
+                cognome: "$_id.cognome",
+                nome: "$_id.nome",
+                desc_consuntivo: "$_id.desc_consuntivo",
+                tot_ore: "$tot_ore",
+                tot_gg: { $divide : [ "$tot_ore",8] }
+            }
+        }
+
+    ];
+
+    Consuntivo.aggregate(query).exec((err, consuntiviUtente) => {
+        if (err) {
+            deferred.reject(err.name + ': ' + err.message);
+        } else {
+            deferred.resolve(consuntiviUtente);
+        }
     });
 
     return deferred.promise;
