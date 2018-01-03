@@ -141,25 +141,6 @@ function getConsuntiviUtente(id_user, month, year) {
     let consuntivo = new Consuntivo();
 
     mongoose.set('debug', true);
-<<<<<<< HEAD
-    var query = [
-        {
-            $project:
-            {
-                doc: "$$ROOT",
-                year: { $cond: ["$data_consuntivo", { $year: "$data_consuntivo" }, -1] },
-                month: { $cond: ["$data_consuntivo", { $month: "$data_consuntivo" }, -1] },
-                day: { $cond: ["$data_consuntivo", { $dayOfMonth: "$data_consuntivo" }, -1] },
-                user: "$id_utente"
-            }
-        },
-        {
-            $match: {
-                "month": new Number(month).valueOf(),
-                "year": new Number(year).valueOf(),
-                "user": id_user
-            }
-=======
 	var query = [
 		{
 			$project:
@@ -177,7 +158,6 @@ function getConsuntiviUtente(id_user, month, year) {
 				"year": new Number(year).valueOf(),
 				"user": mongoose.Types.ObjectId(id_user)
 			}
->>>>>>> 372a1421e16133b4c257aee7bb349ea118ea20c0
         },
         {
             $replaceRoot: { newRoot: "$doc" }
