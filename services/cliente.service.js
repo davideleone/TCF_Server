@@ -14,23 +14,24 @@ serviceCliente.getClienteById = getClienteById;
 module.exports = serviceCliente;
 
 function addCliente(clienteParam) {
-    console.log("addCliente "+clienteParam._id)
     var deferred = Q.defer();
-	if(clienteParam.data_inizio_validita == undefined){
+	if(clienteParam.data_inizio_validita == undefined)
 		clienteParam.data_inizio_validita = Date.now();
-	}
-    console.log (clienteParam);
+    
     let newCliente = new Cliente(clienteParam);
     console.log(newCliente);
     var query = {'_id':newCliente._id};
-    Cliente.findOneAndUpdate(query, newCliente, {upsert:true}, function(err, doc){
-        if (err){
+
+
+    Cliente.findOneAndUpdate(query, newCliente, {upsert:true, new: true}, function(err, doc){
+        if (err)
             deferred.reject(err.name + ': ' + err.message);
-        }else{
-             deferred.resolve({msg: 'Cliente add successfully'});
-        }
+        else 
+            deferred.resolve(doc);
+        
     });
-     return deferred.promise;
+
+    return deferred.promise;
 }
 
 function getClienti() {
