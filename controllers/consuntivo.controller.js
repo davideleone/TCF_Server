@@ -8,11 +8,11 @@ var consuntivoService = require('services/consuntivo.service');
 /*routerConsuntivo.post('/consuntivo', addConsuntivo);*/
 routerConsuntivo.post('/consuntiviTraDate', getConsuntiviBetweenDates);
 //CRUD
-routerConsuntivo.post('/consuntiviUtente', insOrUpdConsuntiviUtente); 			//CREATE-UPDATE
+routerConsuntivo.post('/consuntiviUtente/', insOrUpdConsuntiviUtente); 			//CREATE-UPDATE
 routerConsuntivo.get('/consuntiviUtente/:id_user/:month/:year', getConsuntiviUtente);  //READ
 routerConsuntivo.delete('/consuntiviUtente/:id_user/:id_macro_area/:id_ambito/:id_attivita/:id_tipo_deliverable', delConsuntiviUtente);				//DELETE
-routerConsuntivo.get('/reportAttivita/:id_cliente', getReportAttivita);
-routerConsuntivo.get('/reportTotale/:id_cliente', getReportTotale);
+routerConsuntivo.get('/reportAttivita/:id_cliente/:data_inizio/:data_fine', getReportAttivita);
+routerConsuntivo.get('/reportTotale/:id_cliente/:data_inizio/:data_fine', getReportTotale);
 
 function addMeseConsuntivo(req, res){
 	consuntivoService.addMeseConsuntivo(req.body).then(function(){
@@ -71,7 +71,7 @@ function getConsuntiviUtente(req, res){
 
 //CRUD - CREATE/UPDATE  multiple
 function insOrUpdConsuntiviUtente(req, res){
-	consuntivoService.insOrUpdConsuntiviUtente(req).then(function(msg){
+	consuntivoService.insOrUpdConsuntiviUtente(req.body).then(function(msg){
 		console.log("consuntivo.controller.modifyConsuntiviUtente: ok");
 		res.send(msg);
 	}).catch(function (err) {
@@ -95,7 +95,7 @@ function delConsuntiviUtente(req, res){
 };
 
 function getReportTotale(req, res){
-	consuntivoService.getReportTotale(req.params.id_cliente, res).then(function(msg){
+	consuntivoService.getReportTotale(req.params.id_cliente, req.params.data_inizio,req.params.data_fine, res).then(function(msg){
 		res.send(msg);
 	}).catch(function(err){
 		res.status(400).send(err);
@@ -103,7 +103,7 @@ function getReportTotale(req, res){
 };
 
 function getReportAttivita(req, res){
-	consuntivoService.getReportAttivita(req.params.id_cliente, res).then(function(msg){
+	consuntivoService.getReportAttivita(req.params.id_cliente, req.params.data_inizio,req.params.data_fine, res).then(function(msg){
 		res.send(msg);
 	}).catch(function(err){
 		res.status(400).send(err);

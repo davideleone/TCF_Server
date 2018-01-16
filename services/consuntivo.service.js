@@ -179,22 +179,24 @@ function getConsuntiviUtente(id_user, month, year) {
 //OK
 function insOrUpdConsuntiviUtente(consuntiviUtente) {
     console.log("insOrUpdConsuntiviUtente");
-
     var deferred = Q.defer();
     var transaction = Fawn.Task();
     var query;
     //transaction.initModel("Consuntivo", this.Consuntivo);
     mongoose.set('debug', true);
 
-    for (var i = 0; i < consuntiviUtente.body.length; i++) {
-        var id = consuntiviUtente.body[i]._id;
-        var object = _.omit(consuntiviUtente.body[i], '_id');
-        object = _.omit(consuntiviUtente.body[i], '__v');
-        if (id != null) {
-            transaction.update(Consuntivo, { _id: id }, object).options({ upsert: true });
-        } else {
-            transaction.save(Consuntivo, object);
-        }
+    for (var i = 0; i < consuntiviUtente.length; i++) {
+        var dataConsuntivo = consuntiviUtente[i].data_consuntivo;
+        var idAttivita = consuntiviUtente[i].id_attivita;
+        var user = consuntiviUtente[i].id_utente;
+        var deliverable = consuntiviUtente[i].id_tipo_deliverable;
+        var object = _.omit(consuntiviUtente[i], '_id');
+        object = _.omit(consuntiviUtente[i], '__v');
+        transaction.update(Consuntivo, { data_consuntivo : dataConsuntivo,
+                                         id_utente : user,
+                                         id_attivita : idAttivita,
+                                         id_tipo_deliverable : deliverable,
+                                        }, object).options({ upsert: true });
     }
 
     transaction.run({ useMongoose: true }).then(function (results) {
@@ -241,7 +243,7 @@ function delConsuntiviUtente(id_user,
     return deferred.promise;
 }
 
-function getReportAttivita(id_cliente) {
+function getReportAttivita(id_cliente, data_inizio, data_fine) {
     var deferred = Q.defer();
     let consuntivo = new Consuntivo();
 
@@ -341,7 +343,7 @@ function getReportAttivita(id_cliente) {
 
 
 
-function getReportTotale(id_cliente) {
+function getReportTotale(id_cliente, data_inizio, data_fine) {
     var deferred = Q.defer();
     let consuntivo = new Consuntivo();
 
@@ -472,4 +474,3 @@ function getReportTotale(id_cliente) {
 
     return deferred.promise;
 }
-
