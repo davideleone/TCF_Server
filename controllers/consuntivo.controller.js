@@ -13,6 +13,7 @@ routerConsuntivo.get('/consuntiviUtente/:id_user/:month/:year', getConsuntiviUte
 routerConsuntivo.delete('/consuntiviUtente/:id_user/:id_macro_area/:id_ambito/:id_attivita/:id_tipo_deliverable', delConsuntiviUtente);				//DELETE
 routerConsuntivo.get('/reportAttivita/:id_cliente/:data_inizio/:data_fine', getReportAttivita);
 routerConsuntivo.get('/reportTotale/:id_cliente/:data_inizio/:data_fine', getReportTotale);
+routerConsuntivo.get('/reportTotale', getReportTotaleClone);
 
 function addMeseConsuntivo(req, res){
 	consuntivoService.addMeseConsuntivo(req.body).then(function(){
@@ -92,6 +93,14 @@ function delConsuntiviUtente(req, res){
 	}).catch(function (err) {
             res.status(400).send(err);
 	});	
+};
+
+function getReportTotaleClone(req, res){
+	consuntivoService.getReportTotale(req, res).then(function(msg){
+		res.send(msg);
+	}).catch(function(err){
+		res.status(400).send(err);
+	});
 };
 
 function getReportTotale(req, res){
