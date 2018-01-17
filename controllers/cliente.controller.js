@@ -7,8 +7,8 @@ routerCliente.get('/clienti', getClienti);
 routerCliente.get('/clienteById/:idCliente', getClienteById);
 
 function addCliente(req, res){
-	clienteService.addCliente(req.body).then(function(){
-		 res.sendStatus(200);
+	clienteService.addCliente(req.body).then(function(cliente){
+		res.send(cliente);
 	}).catch(function (err) {
 		res.status(400).send(err);
 	});
@@ -19,7 +19,7 @@ function getClienti(req, res){
 	clienteService.getClienti().then(function(clienti){
 		 res.send(clienti);
 	}).catch(function (err) {
-            res.status(400).send(err);
+        res.status(400).send(err);
     });
 	
 };

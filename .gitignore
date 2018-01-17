@@ -1,3 +1,4 @@
 /node_modules/
 /client/node_modules/
 /client/e2e/
+\.vscode/launch\.json
