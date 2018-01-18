@@ -5,42 +5,37 @@ var Excel = require('exceljs');
 
 var serviceReportistica = {};
 
-const Consuntivo = require('../models/consuntivo.js');
+const consuntivoService = require('./consuntivo.service');
+
 
 serviceReportistica.getReportistica = getReportistica;
-serviceReportistica.getRowsForExcel = getRowsForExcel;
 
 module.exports = serviceReportistica;
 
-function getReportistica(reportisticaParam, res){
+function getReportistica(params, res){
 	var deferred = Q.defer();
 
-	//https://github.com/guyonroche/exceljs
-	var workbook = new Excel.Workbook();
-	var sheet = workbook.addWorksheet("Report 1");
-	
+	var formattedParams = {
+		start: dateFormat(new Date(params.start), "yyyy-dd-mm"),
+		end: dateFormat(new Date(params.end), "yyyy-dd-mm"),
+		type: params.type,
+		clientId: params.clientId
+	}
 
-	res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-	res.setHeader("Content-Disposition", "attachment; filename=" + "Report.xlsx");
-	workbook.xlsx.write(res)
-		.then(function(){
-			res.end();
-			deferred.resolve({msg: 'XLS created successfully'});
-		});
-	
+	switch(formattedParams.type){
+		case 'r_totale':
+			consuntivoService.getReportTotale(formattedParams.clientId, formattedParams.end, formattedParams.end).then( res =>{
+				deferred.resolve(res);
+			})
+			break;
+		case 'r_attivita':
+			consuntivoService.getReportAttivita(formattedParams.clientId, formattedParams.end, formattedParams.end).then( res =>{
+				deferred.resolve(res);
+			})
+			break;
+		default:
+			deferred.reject("Non esiste report di tipo " + formattedParams.type);
+	}
+
 	return deferred.promise;
-}
-
-function getRowsForExcel(params, res){
-	var deferred = Q.defer();
-
-	let consuntivo = new Consuntivo(); 
-
-	var start = dateFormat(new Date(params.start), "yyyy-dd-mm");
-	var end = dateFormat(new Date(params.end), "yyyy-dd-mm");
-    consuntivo.getRowsForExcel({start : new Date(start).toISOString(), end : new Date(end).toISOString(), res : res},function (err, reportistica) {
-        
-    });
-
-    return deferred.promise;
 }

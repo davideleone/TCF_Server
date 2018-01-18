@@ -116,25 +116,6 @@ function getConsuntiviBetweenDates(start, end) {
     return deferred.promise;
 }
 
-
-// function getConsuntiviUtente(id_user, month, year) {
-//     var deferred = Q.defer();
-
-
-//     let consuntivo = new Consuntivo();
-//     consuntivo.getConsuntiviUtente({ start: new Date(start).toISOString(), end: new Date(end).toISOString() }, function (err, consuntivo) {
-//         if (err) {
-//             deferred.reject(err.name + ': ' + err.message);
-//         } else {
-//             deferred.resolve(consuntivo);
-//         }
-
-//     });
-
-//     return deferred.promise;
-// }
-
-//OK
 function getConsuntiviUtente(id_user, month, year) {
     var deferred = Q.defer();
     console.log("user: " + id_user + " month: " + month + "/" + year);
@@ -310,6 +291,7 @@ function getReportAttivita(id_cliente, data_inizio, data_fine) {
         // Stage 7
         {
             $project: {
+                _id: 0,
                 nome_cliente: "$nome_cliente",
                 nome_ambito: "$nome_ambito",
                 nome_macro_area: "$nome_macro_area",
