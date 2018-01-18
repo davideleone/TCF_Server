@@ -114,29 +114,30 @@ function getConsuntiviBetweenDates(start, end) {
     return deferred.promise;
 }
 
+//OK
 function getConsuntiviUtente(id_user, month, year) {
     var deferred = Q.defer();
     console.log("user: " + id_user + " month: " + month + "/" + year);
     let consuntivo = new Consuntivo();
 
     mongoose.set('debug', true);
-	var query = [
-		{
-			$project:
-			{
-				doc: "$$ROOT",
-				year: { $cond: ["$data_consuntivo", { $year: "$data_consuntivo" }, -1] },
-				month: { $cond: ["$data_consuntivo", { $month: "$data_consuntivo" }, -1] },
-				day: { $cond: ["$data_consuntivo", { $dayOfMonth: "$data_consuntivo" }, -1] },
-				user: "$id_utente"
-			}
-		},
-		{
-			$match: {
-				"month": new Number(month).valueOf(),
-				"year": new Number(year).valueOf(),
-				"user": mongoose.Types.ObjectId(id_user)
-			}
+    var query = [
+        {
+            $project:
+            {
+                doc: "$$ROOT",
+                year: { $cond: ["$data_consuntivo", { $year: "$data_consuntivo" }, -1] },
+                month: { $cond: ["$data_consuntivo", { $month: "$data_consuntivo" }, -1] },
+                day: { $cond: ["$data_consuntivo", { $dayOfMonth: "$data_consuntivo" }, -1] },
+                user: "$id_utente"
+            }
+        },
+        {
+            $match: {
+                "month": new Number(month).valueOf(),
+                "year": new Number(year).valueOf(),
+                "user": mongoose.Types.ObjectId(id_user)
+            }
         },
         {
             $replaceRoot: { newRoot: "$doc" }
@@ -171,11 +172,12 @@ function insOrUpdConsuntiviUtente(consuntiviUtente) {
         var deliverable = consuntiviUtente[i].id_tipo_deliverable;
         var object = _.omit(consuntiviUtente[i], '_id');
         object = _.omit(consuntiviUtente[i], '__v');
-        transaction.update(Consuntivo, { data_consuntivo : dataConsuntivo,
-                                         id_utente : user,
-                                         id_attivita : idAttivita,
-                                         id_tipo_deliverable : deliverable,
-                                        }, object).options({ upsert: true });
+        transaction.update(Consuntivo, {
+            data_consuntivo: dataConsuntivo,
+            id_utente: user,
+            id_attivita: idAttivita,
+            id_tipo_deliverable: deliverable,
+        }, object).options({ upsert: true });
     }
 
     transaction.run({ useMongoose: true }).then(function (results) {
@@ -226,14 +228,11 @@ function getReportAttivita(id_cliente, data_inizio, data_fine) {
     var query = [
         // Stage 1
         {
-            $match: {                
-                $and: [
-                    { "id_cliente": mongoose.Types.ObjectId(id_cliente) },
-                    /*{ "data_consuntivo": {
-                        '$gte': data_inizio,
-                        '$lte': data_fine
-                    }}*/
-                ]
+            $match: {
+                "id_cliente": mongoose.Types.ObjectId(id_cliente),
+                "data_consuntivo": {
+                    $gte: new Date(data_inizio), $lte: new Date(data_fine)
+                }
             }
         },
         {
@@ -328,21 +327,17 @@ function getReportAttivita(id_cliente, data_inizio, data_fine) {
 function getReportTotale(id_cliente, data_inizio, data_fine) {
     var deferred = Q.defer();
     let consuntivo = new Consuntivo();
-
     mongoose.set('debug', true);
     var query = [
         // Stage 1
-        /*{
-            $match: {                
-                $and: [
-                    { "id_cliente": mongoose.Types.ObjectId(id_cliente) },
-                    { "data_consuntivo": {
-                        '$gte': data_inizio,
-                        '$lte': data_fine
-                    }}
-                ]
+        {
+            $match: {
+                "id_cliente": mongoose.Types.ObjectId(id_cliente),
+                "data_consuntivo": {
+                    $gte: new Date(data_inizio), $lte: new Date(data_fine)
+                }
             }
-        },*/
+        },
         {
             $lookup: {
                 "from": mongoose.model('User').collection.collectionName,
@@ -409,6 +404,7 @@ function getReportTotale(id_cliente, data_inizio, data_fine) {
         {
             $group: {
                 "_id": {
+                    data_consuntivo: "$data_consuntivo",
                     id_attivita: "$id_attivita",
                     id_tipo_deliverable: "$id_tipo_deliverable",
                     id_utente: "$id_utente",
@@ -424,14 +420,13 @@ function getReportTotale(id_cliente, data_inizio, data_fine) {
                     type_of_work: "$nome_tipo_deliverable",
                     cognome: "$utente.cognome",
                     nome: "$utente.nome",
-                    desc_consuntivo: "$note",
                 },
                 tot_ore: { $sum: "$ore" }
             }
         },
         {
             $project: {
-                _id : 0 ,
+                _id: 0,
                 nome_cliente: "$_id.nome_cliente",
                 nome_ambito: "$_id.nome_ambito",
                 nome_macro_area: "$_id.nome_macro_area",
@@ -444,9 +439,14 @@ function getReportTotale(id_cliente, data_inizio, data_fine) {
                 type_of_work: "$_id.type_of_work",
                 cognome: "$_id.cognome",
                 nome: "$_id.nome",
-                desc_consuntivo: "$_id.desc_consuntivo",
                 tot_ore: "$tot_ore",
-                tot_gg: { $divide : [ "$tot_ore",8] }
+                data_consuntivo: "$_id.data_consuntivo",
+
+            }
+        },
+        {
+            $match: {
+                "tot_ore": { $ne: 0 }
             }
         }
 
