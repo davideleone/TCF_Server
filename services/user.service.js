@@ -48,6 +48,29 @@ function authenticate(username, password) {
     return deferred.promise;
 }
 
+function addUser(userParam) {
+    console.log("addUser " + userParam._id)
+    var deferred = Q.defer();
+    // set user object to userParam without the cleartext password
+    var user = _.omit(userParam, 'password');
+    console.log(user);
+    // add hashed password to user object
+    user.password = bcrypt.hashSync(userParam.password, 10);
+
+    let newUser = new User(user);
+    console.log(newUser);
+    var query = { '_id': newUser._id };
+    User.findOneAndUpdate(query, newUser, { upsert: true }, function (err, doc) {
+        if (err) {
+            deferred.reject(err.name + ': ' + err.message);
+        } else {
+            deferred.resolve({ msg: 'User add successfully' });
+        }
+    });
+    return deferred.promise;
+}
+
+
 function getUsersByManager(userLogged) {
     var logPrefix = 'user.service.getUsersByManager: ';
     var deferred = Q.defer();
@@ -110,7 +133,6 @@ function getUsersByManager(userLogged) {
                 console.log("userManager[0].isAdmin: " + userManager[0].isAdmin);
             
                 if(userManager[0].isAdmin == true){
-                    //User.find({"_id":{$ne : mongoose.Types.ObjectId(userLogged)}})
                     User.find()
                     .populate("clienti.cliente")
                     .exec(function (err, users) {
@@ -124,7 +146,6 @@ function getUsersByManager(userLogged) {
                 }
                 else{
                     User.find({"clienti": {"$elemMatch":{"cliente":{"$in": userManager[0].clienti}}} })
-                    //User.find({"_id":{$ne : mongoose.Types.ObjectId(userLogged)}, "clienti": {"$elemMatch":{"cliente":{"$in": userManager[0].clienti}}} })
                         .populate("clienti.cliente")
                         .exec( 
                         function(err, users){
@@ -214,67 +235,27 @@ function changeUserPwd(userLogged, oldPwd, newPwd) {
 
 //CRUD - CREATE UPDATE
 function insOrUpdUser(userParam) {
-    console.log("addUser " + userParam._id)
+    console.log("addUser "+userParam._id)
     var deferred = Q.defer();
     // set user object to userParam without the cleartext password
     
     let newUser = new User(userParam);
+    // mongoose.set('debug', true);
+    // add hashed password to user object
+
     var query = {'_id':newUser._id};       
     if (newUser.password!= null && !newUser.password.startsWith('$2a')) //password ancora da cifrare   
         newUser.password = bcrypt.hashSync(userParam.password, 10);
-
-    getUserById(newUser._id).then( user => {
-        console.log("USER: " + user);
-        countUsersByUsername(newUser.username).then(count => {
-            console.log("COUNT: " + count);
-            if ((count == 1 && user != null) || count == 0) 
-                findOneAndUpdate(query, newUser).then( user => deferred.resolve(user) );
-            else
-                deferred.reject("Username non disponibile");
-        });
-    })    
-       
-    return deferred.promise;
-}
-
-function countUsersByUsername(username){
-    var deferred = Q.defer();
     
-    User.find({"username" : username}).count( function(err, doc){
-        if (err)
-            deferred.reject(err.name + ': ' + err.message);
-        else 
-            deferred.resolve(doc);
-    });
-
-    return deferred.promise;
-}
-
-function getUserById(idParam) {
-    var deferred = Q.defer();
-
-	User.findById({"_id" : idParam },function (err, cliente) {
-        if (err)
-            deferred.reject(err.name + ': ' + err.message);  
-        else
-            deferred.resolve(cliente);
-    });
-
-    return deferred.promise;
-}
-
-function findOneAndUpdate(query, newUser){
-    var deferred = Q.defer();
-
     User.findOneAndUpdate(query, newUser, {new: true, upsert:true})
         .populate({ path:"clienti.cliente", 
                     model: Cliente })
         .exec((err, user) => {
-            if (err)
+            if (err){
                 deferred.reject(err.name + ': ' + err.message);
-            else
+            }else{
                 deferred.resolve(user);
+            }
     });
-
-    return deferred.promise;
+     return deferred.promise;
 }
