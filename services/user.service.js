@@ -133,7 +133,8 @@ function getUsersByManager(userLogged) {
                 console.log("userManager[0].isAdmin: " + userManager[0].isAdmin);
             
                 if(userManager[0].isAdmin == true){
-                    User.find({"_id":{$ne : mongoose.Types.ObjectId(userLogged)}})
+                    //User.find({"_id":{$ne : mongoose.Types.ObjectId(userLogged)}})
+                    User.find()
                     .populate("clienti.cliente")
                     .exec(function (err, users) {
                         if (err) {
@@ -145,7 +146,8 @@ function getUsersByManager(userLogged) {
                     });       
                 }
                 else{
-                    User.find({"_id":{$ne : mongoose.Types.ObjectId(userLogged)}, "clienti": {"$elemMatch":{"cliente":{"$in": userManager[0].clienti}}} })
+                    User.find({"clienti": {"$elemMatch":{"cliente":{"$in": userManager[0].clienti}}} })
+                    //User.find({"_id":{$ne : mongoose.Types.ObjectId(userLogged)}, "clienti": {"$elemMatch":{"cliente":{"$in": userManager[0].clienti}}} })
                         .populate("clienti.cliente")
                         .exec( 
                         function(err, users){
