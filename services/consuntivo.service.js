@@ -48,10 +48,8 @@ function addConsuntivo(consuntivoParam) {
     console.log("addConsuntivo " + consuntivoParam._id)
     var deferred = Q.defer();
     consuntivoParam.data_consuntivo = consuntivoParam.data_consuntivo
-    console.log(consuntivoParam.data_consuntivo);
-    console.log(consuntivoParam);
     let newConsuntivo = new Consuntivo(consuntivoParam);
-    console.log(newConsuntivo);
+
     var query = { '_id': newConsuntivo._id };
     Consuntivo.findOneAndUpdate(query, newConsuntivo, { upsert: true }, function (err, doc) {
         if (err) {
@@ -65,7 +63,7 @@ function addConsuntivo(consuntivoParam) {
 
 function getMeseConsuntivoCliente(idCliente, anno, mese) {
     var deferred = Q.defer();
-    console.log(idCliente + "-" + anno + "-" + mese);
+
     let meseConsuntivo = new MeseConsuntivo();
     meseConsuntivo.findByClienteAnnoAndMese({ idCliente: idCliente, anno: anno, mese: mese }, function (err, consuntivo) {
         if (err) {
@@ -183,16 +181,12 @@ function insOrUpdConsuntiviUtente(consuntiviUtente) {
     }
 
     transaction.run({ useMongoose: true }).then(function (results) {
-        console.log(results[0].result);
-        //deferred.resolve(results[0].result);
         deferred.resolve({ msg: 'ConsuntiviUtente add successfully' });
     })
-        .catch(function (err) {
-            // Everything has been rolled back.			
-            // log the error which caused the failure
-            console.log(err);
-            deferred.reject(err);
-        });
+    .catch(function (err) {
+        console.log(err);
+        deferred.reject(err);
+    });
 
     return deferred.promise;
 }
