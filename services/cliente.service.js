@@ -24,15 +24,8 @@ function addCliente(clienteParam) {
     getClienteById(newCliente._id).then(cliente => {
 
         countClientiByName(newCliente.nome_cliente).then(count => {
-
-            if ((count == 1 && cliente != null) || count == 0) {
-                Cliente.findOneAndUpdate(query, newCliente, { upsert: true, new: true }, function (err, doc) {
-                    if (err)
-                        deferred.reject(err.name + ': ' + err.message);
-                    else
-                        deferred.resolve(doc);
-                });
-            }
+            if ((count == 1 && cliente != null) || count == 0) 
+                findOneAndUpdate(query, newCliente).then(res => deferred.resolve(res));
             else
                 deferred.reject("Non è possibile inserire clienti con lo stesso nome")
         });
@@ -80,5 +73,16 @@ function getClienteById(idParam) {
             deferred.resolve(cliente);
     });
 
+    return deferred.promise;
+}
+
+function findOneAndUpdate(query ,newCliente){
+    var deferred = Q.defer();
+    Cliente.findOneAndUpdate(query, newCliente, { upsert: true, new: true }, function (err, doc) {
+        if (err)
+            deferred.reject(err.name + ': ' + err.message);
+        else
+            deferred.resolve(doc);
+    });
     return deferred.promise;
 }
