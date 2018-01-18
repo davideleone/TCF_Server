@@ -232,8 +232,14 @@ function getReportAttivita(id_cliente, data_inizio, data_fine) {
     var query = [
         // Stage 1
         {
-            $match: {
-                "id_cliente": mongoose.Types.ObjectId(id_cliente)
+            $match: {                
+                $and: [
+                    { "id_cliente": mongoose.Types.ObjectId(id_cliente) },
+                    /*{ "data_consuntivo": {
+                        '$gte': data_inizio,
+                        '$lte': data_fine
+                    }}*/
+                ]
             }
         },
         {
@@ -332,11 +338,17 @@ function getReportTotale(id_cliente, data_inizio, data_fine) {
     mongoose.set('debug', true);
     var query = [
         // Stage 1
-        {
-            $match: {
-                "id_cliente": mongoose.Types.ObjectId(id_cliente)
+        /*{
+            $match: {                
+                $and: [
+                    { "id_cliente": mongoose.Types.ObjectId(id_cliente) },
+                    { "data_consuntivo": {
+                        '$gte': data_inizio,
+                        '$lte': data_fine
+                    }}
+                ]
             }
-        },
+        },*/
         {
             $lookup: {
                 "from": mongoose.model('User').collection.collectionName,
