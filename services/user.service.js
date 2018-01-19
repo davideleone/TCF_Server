@@ -214,17 +214,15 @@ function changeUserPwd(userLogged, oldPwd, newPwd) {
 function insOrUpdUser(userParam) {
     console.log("addUser " + userParam._id)
     var deferred = Q.defer();
-    // set user object to userParam without the cleartext password
     
     let newUser = new User(userParam);
     var query = {'_id':newUser._id};       
-    if (newUser.password!= null && !newUser.password.startsWith('$2a')) //password ancora da cifrare   
+    if (newUser.password!= null && !newUser.password.startsWith('$2a'))
         newUser.password = bcrypt.hashSync(userParam.password, 10);
 
     getUserById(newUser._id).then( user => {
-        console.log("USER: " + user);
+
         countUsersByUsername(newUser.username).then(count => {
-            console.log("COUNT: " + count);
             if ((count == 1 && user != null) || count == 0) 
                 findOneAndUpdate(query, newUser).then( user => deferred.resolve(user) );
             else
