@@ -287,24 +287,46 @@ function getReportAttivita(id_cliente, data_inizio, data_fine) {
                 preserveNullAndEmptyArrays: false // optional
             }
         },
+        {
+            $group: {
+                "_id": {
+                    nome_cliente: "$nome_cliente",
+                    nome_ambito: "$nome_ambito",
+                    nome_macro_area: "$nome_macro_area",
+                    nome_attivita: "$attivita.nome_attivita",
+                    codice_commessa_cliente: "$commessa_cliente.codice_commessa",
+                    nome_commessa_cliente: "$commessa_cliente.nome_commessa",
+                    codice_attivita: "$attivita.codice_attivita",
+                    codice_commessa_fnc: "$commessa_fincons.codice_commessa",
+                    nome_commessa_fnc: "$commessa_fincons.nome_commessa",
+                    descrizione_attivita: "$attivita.descrizione_attivita",
+                    stato_attivita: "$attivita.nome_stato",
+                    budget_euro: "$attivita.budget_euro",
+                    budget_ore: "$attivita.budget_ore",
+                    data_inizio: "$attivita.data_inizio_validita",
+                    data_fine: "$attivita.data_fine_validita"
+                }
+            }
+        },
         // Stage 7
         {
             $project: {
                 _id: 0,
-                nome_cliente: "$nome_cliente",
-                nome_ambito: "$nome_ambito",
-                nome_macro_area: "$nome_macro_area",
-                nome_attivita: "$attivita.nome_attivita",
-                codice_commessa_cliente: "$commessa_cliente.codice_commessa",
-                nome_commessa_cliente: "$commessa_cliente.nome_commessa",
-                codice_attivita: "$attivita.codice_attivita",
-                codice_commessa_fnc: "$commessa_fincons.codice_commessa",
-                nome_commessa_fnc: "$commessa_fincons.nome_commessa",
-                descrizione_attivita: "$attivita.descrizione_attivita",
-                stato_attivita: "$attivita.stato_attivita",
-                budget_ore: "$attivita.budget_ore",
-                data_inizio: "$attivita.data_inizio_validita",
-                data_fine: "$attivita.data_fine_validita"
+                nome_cliente: "$_id.nome_cliente",
+                nome_ambito: "$_id.nome_ambito",
+                nome_macro_area: "$_id.nome_macro_area",
+                nome_attivita: "$_id.nome_attivita",
+                codice_commessa_cliente: "$_id.codice_commessa_cliente",
+                nome_commessa_cliente: "$_id.nome_commessa_cliente",
+                codice_attivita: "$_id.codice_attivita",
+                codice_commessa_fnc: "$_id.codice_commessa_fnc",
+                nome_commessa_fnc: "$_id.nome_commessa_fnc",
+                descrizione_attivita: "$_id.descrizione_attivita",
+                stato_attivita: "$_id.stato_attivita",
+                budget_euro: "$_id.budget_euro",
+                budget_ore: "$_id.budget_ore",
+                data_inizio: "$_id.data_inizio",
+                data_fine: "$_id.data_fine"
             }
         },
 
