@@ -239,17 +239,14 @@ function insOrUpdUser(userParam) {
     var deferred = Q.defer();
     
     let newUser = new User(userParam);
-    // mongoose.set('debug', true);
-    // add hashed password to user object
 
     var query = {'_id':newUser._id};       
     if (newUser.password!= null && !newUser.password.startsWith('$2a'))
         newUser.password = bcrypt.hashSync(userParam.password, 10);
 
     getUserById(newUser._id).then( user => {
-        console.log("USER: " + user);
+
         countUsersByUsername(newUser.username).then(count => {
-            console.log("COUNT: " + count);
             if ((count == 1 && user != null) || count == 0) 
                 findOneAndUpdate(query, newUser).then( user => deferred.resolve(user) );
             else
@@ -260,18 +257,42 @@ function insOrUpdUser(userParam) {
     return deferred.promise;
 }
 
-function countUsersByUsername(username){
+function findOneAndUpdate(query, newUser){
     var deferred = Q.defer();
-    
     User.findOneAndUpdate(query, newUser, {new: true, upsert:true})
         .populate({ path:"clienti.cliente", 
                     model: Cliente })
         .exec((err, user) => {
-            if (err){
+            if (err)
                 deferred.reject(err.name + ': ' + err.message);
-            }else{
+            else
                 deferred.resolve(user);
-            }
     });
-     return deferred.promise;
+    return deferred.promise;
+}
+
+function countUsersByUsername(username){
+    var deferred = Q.defer();
+    
+    User.find({"username" : username}).count( function(err, doc){
+        if (err)
+            deferred.reject(err.name + ': ' + err.message);
+        else 
+            deferred.resolve(doc);
+    });
+
+    return deferred.promise;
+}
+
+function getUserById(id){
+    var deferred = Q.defer();
+    
+    User.findById({"_id" : id },function (err, cliente) {
+        if (err)
+            deferred.reject(err.name + ': ' + err.message);  
+        else
+            deferred.resolve(cliente);
+    });
+    
+    return deferred.promise;
 }
