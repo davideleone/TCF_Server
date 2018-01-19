@@ -26,22 +26,6 @@ function insOrUpdMeseConsuntivoUtente(meseConsuntivoParam) {
     });
      return deferred.promise;
 }
-/*
-function getMeseConsuntivoUtente(idCliente, anno, mese) {
-    var deferred = Q.defer();
-    console.log(idCliente + "-" + anno + "-" + mese);
-    let meseConsuntivo = new MeseConsuntivo();
-    meseConsuntivo.findByClienteAnnoAndMese({ idCliente: idCliente, anno: anno, mese: mese }, function (err, consuntivo) {
-        if (err) {
-            deferred.reject(err.name + ': ' + err.message);
-        } else {
-            deferred.resolve(consuntivo);
-        }
-
-    });
-
-    return deferred.promise;
-}*/
 
 
 function getById(_id) {
@@ -73,6 +57,19 @@ function getByYear(id_user, year) {
         } else {
             deferred.resolve(mesiConsuntivi);
         }
+    });
+
+    return deferred.promise;
+}
+
+function countClientiByName(name){
+    var deferred = Q.defer();
+    
+    Cliente.find({"nome_cliente" : name}).count( function(err, doc){
+        if (err)
+            deferred.reject(err.name + ': ' + err.message);
+        else 
+            deferred.resolve(doc);
     });
 
     return deferred.promise;

@@ -3,14 +3,15 @@ const routerCommessaCliente = express.Router();
 
 var commessaClienteService = require('services/commessaCliente.service');
 
-routerCommessaCliente.post('/meseConsuntivoCliente', insOrUpdCommessaCliente);
+routerCommessaCliente.post('/addOrUpdateCommessaCliente', insOrUpdCommessaCliente);
 
 
 function insOrUpdCommessaCliente(req, res){
-	commessaClienteService.insOrUpdMeseConsuntivoUtente(req.body).then(function(){
-		res.sendStatus(200);
+	commessaClienteService.addOrUpdateCommessaCliente(req.body).then(function(commessa){
+		console.log("SONO NEL CONTROLLER")
+		res.send(commessa);
 	}).catch(function (err) {
-        res.status(400).send(err);
+       	res.status(400).send(err);
     });	
 };
 

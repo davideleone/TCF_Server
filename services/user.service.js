@@ -245,7 +245,6 @@ function insOrUpdUser(userParam) {
         newUser.password = bcrypt.hashSync(userParam.password, 10);
 
     getUserById(newUser._id).then( user => {
-
         countUsersByUsername(newUser.username).then(count => {
             if ((count == 1 && user != null) || count == 0) 
                 findOneAndUpdate(query, newUser).then( user => deferred.resolve(user) );
