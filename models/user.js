@@ -9,6 +9,10 @@ const UserSchema = mongoose.Schema({
 		type: String,
 		required: false
 	},
+	desc_sede:{
+		type: String,
+		required: false
+	},
 	password:{
 		type: String,
 		required: true
