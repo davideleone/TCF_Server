@@ -26,10 +26,10 @@ function addCliente(clienteParam) {
         //INSERT
         if(cliente == null){
             countClientiByName(inputCliente.nome_cliente).then(count => {
-                if ((count == 1 && cliente != null) || count == 0) 
+                if (count == 0) 
                     findOneAndUpdate(query, newCliente).then(res => deferred.resolve(res));
-                    else
-                deferred.reject("Non è possibile inserire più clienti con lo stesso nome")
+                else
+                    deferred.reject("Non è possibile inserire più clienti con lo stesso nome")
             })
         }
         //UPDATE

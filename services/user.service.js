@@ -245,12 +245,29 @@ function insOrUpdUser(userParam) {
         newUser.password = bcrypt.hashSync(userParam.password, 10);
 
     getUserById(newUser._id).then( user => {
-        countUsersByUsername(newUser.username).then(count => {
-            if ((count == 1 && user != null) || count == 0) 
-                findOneAndUpdate(query, newUser).then( user => deferred.resolve(user) );
+        //INSERT
+        if(user == null){
+            countUsersByUsername(newUser.username).then(count => {
+                if (count == 0) 
+                    findOneAndUpdate(query, newUser).then( user => deferred.resolve(user) );
+                else
+                    deferred.reject("Username non disponibile");
+            });
+        }
+        //UPDATE
+        else{
+            if(count == 1){
+                getUserByUsername(newUser.username).then(userInEdit => {
+                    //CONFRONTO ID in input con ID oggetto già esistente in DB
+                    if(userInEdit._id.equals(newUser._id))
+                        findOneAndUpdate({_id: newUser.id}, newUser).then(res => deferred.resolve(res));
+                    else
+                        deferred.reject("Username non disponibile");
+                })
+            }
             else
                 deferred.reject("Username non disponibile");
-        });
+        }
     })    
        
     return deferred.promise;
@@ -293,5 +310,18 @@ function getUserById(id){
             deferred.resolve(cliente);
     });
     
+    return deferred.promise;
+}
+
+function getUserByUsername(username){
+    var deferred = Q.defer();
+    
+    User.findOne({"username" : username}, function(err, doc){
+        if (err)
+            deferred.reject(err.name + ': ' + err.message);
+        else 
+            deferred.resolve(doc);
+    });
+
     return deferred.promise;
 }
