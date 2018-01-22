@@ -1,6 +1,7 @@
 const CommessaCliente = require('../models/commessaCliente.js');
 var _ = require('lodash');
 var Q = require('q');
+const mongoose = require('mongoose');
 
 var serviceCommessaCliente= {};
 
@@ -11,20 +12,39 @@ serviceCommessaCliente.addOrUpdateCommessaCliente = addOrUpdateCommessaCliente;
 function addOrUpdateCommessaCliente(params) {
     
     let deferred = Q.defer();
+    let commessaInput = new CommessaCliente(params);
 
-    let newCommessaCliente = new CommessaCliente(params);
-    var query = {'_id': newCommessaCliente._id};
-
-    getById(newCommessaCliente._id).then(commessa => {
+    getById(commessaInput._id).then(commessa => {
+ 
+        //INSERT
+        if(commessa == null){
+            countCommessaByCodiceCommessa(commessaInput.codice_commessa).then(count =>{
+                if(count == 0)
+                    findOneAndUpdate({_id: commessaInput.id}, commessaInput).then(res => deferred.resolve(res));
+                else
+                    deferred.reject("Non è possibile inserire più commesse con lo stesso codice commessa")
+            })
+        }
+    
+        //UPDATE
+        else{
+            countCommessaByCodiceCommessa(commessaInput.codice_commessa).then(count =>{
+                if(count == 1){
+                    getCommessaByCodiceCommessa(commessaInput.codice_commessa).then(commessaInEdit => {
         
-        //console.log(commessa)
-        countCommessaByCodiceCommessa(newCommessaCliente.codice_commessa).then(count => {
-            console.log(count)
-            if ((count == 1 && commessa != null) || count == 0) 
-                findOneAndUpdate(query, newCommessaCliente).then(res => deferred.resolve(res));
-            else
-                deferred.reject("Non è possibile inserire commesse con lo stesso codice commessa")
-        });
+                        //CONFRONTO ID in input con ID oggetto già esistente in DB
+                        if(commessaInEdit._id.equals(commessaInput._id))
+                            findOneAndUpdate({_id: commessaInput.id}, commessaInput).then(res => deferred.resolve(res));
+                        else
+                            deferred.reject("Non è possibile inserire più commesse con lo stesso codice commessa")
+                    })
+                }
+                else
+                    deferred.reject("Non è possibile inserire più commesse con lo stesso codice commessa")
+            })
+        }
+        
+
     });
 
     return deferred.promise;
@@ -54,14 +74,27 @@ function countCommessaByCodiceCommessa(cod){
     return deferred.promise;
 }
 
+function getCommessaByCodiceCommessa(cod){
+    var deferred = Q.defer();
+    
+    CommessaCliente.findOne({"codice_commessa" : cod}, function(err, doc){
+        if (err)
+            deferred.reject(err.name + ': ' + err.message);
+        else 
+            deferred.resolve(doc);
+    });
+
+    return deferred.promise;
+}
+
 function getById(idParam) {
     var deferred = Q.defer();
 
-	CommessaCliente.findById({"_id" : idParam },function (err, cliente) {
+	CommessaCliente.findById({"_id" : idParam },function (err, Cliente) {
         if (err)
             deferred.reject(err.name + ': ' + err.message);  
         else
-            deferred.resolve(cliente);
+            deferred.resolve(Cliente);
     });
 
     return deferred.promise;

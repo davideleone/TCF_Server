@@ -19,16 +19,8 @@ function addOrUpdateCommessaFincons(params) {
         //INSERT
         if(commessa == null){
             countCommessaByCodiceCommessa(commessaInput.codice_commessa).then(count =>{
-                if(count == 1){
-                    getCommessaByCodiceCommessa(commessaInput.codice_commessa).then(commessaInEdit => {
-        
-                        //CONFRONTO ID in input con ID oggetto già esistente in DB
-                        if(commessaInEdit._id.equals(commessaInput._id))
-                            findOneAndUpdate({_id: commessaInput.id}, commessaInput).then(res => deferred.resolve(res));
-                        else
-                            deferred.reject("Non è possibile inserire più commesse con lo stesso codice commessa")
-                    })
-                }
+                if(count == 0)
+                    findOneAndUpdate({_id: commessaInput.id}, commessaInput).then(res => deferred.resolve(res));
                 else
                     deferred.reject("Non è possibile inserire più commesse con lo stesso codice commessa")
             })
