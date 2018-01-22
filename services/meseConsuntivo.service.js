@@ -13,10 +13,10 @@ serviceMeseConsuntivo.getByYear = getByYear;
 function insOrUpdMeseConsuntivoUtente(meseConsuntivoParam) {
     console.log("insOrUpdMeseConsuntivo "+meseConsuntivoParam._id)
     var deferred = Q.defer();
-    console.log (meseConsuntivoParam);
+
     let newMeseConsuntivo = new MeseConsuntivo(meseConsuntivoParam);
-    console.log(newMeseConsuntivo);
     var query = {'_id':newMeseConsuntivo._id};
+    
     MeseConsuntivo.findOneAndUpdate(query, newMeseConsuntivo, {upsert:true}, function(err, doc){
         if (err){
             deferred.reject(err.name + ': ' + err.message);

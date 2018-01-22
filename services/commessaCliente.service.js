@@ -16,7 +16,10 @@ function addOrUpdateCommessaCliente(params) {
     var query = {'_id': newCommessaCliente._id};
 
     getById(newCommessaCliente._id).then(commessa => {
+        
+        //console.log(commessa)
         countCommessaByCodiceCommessa(newCommessaCliente.codice_commessa).then(count => {
+            console.log(count)
             if ((count == 1 && commessa != null) || count == 0) 
                 findOneAndUpdate(query, newCommessaCliente).then(res => deferred.resolve(res));
             else

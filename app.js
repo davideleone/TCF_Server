@@ -65,6 +65,7 @@ app.use('/tcf/api/meseConsuntivoController', require('./controllers/meseConsunti
 app.use('/tcf/api/clienteController', require('./controllers/cliente.controller'));
 app.use('/tcf/api/attivitaController', require('./controllers/attivita.controller'));
 app.use('/tcf/api/commessaClienteController', require('./controllers/commessaCliente.controller'));
+app.use('/tcf/api/commessaFinconsController', require('./controllers/commessaFincons.controller'));
  
 // start server
 var port = config.port;
