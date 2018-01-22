@@ -8,7 +8,6 @@ routerCommessaCliente.post('/addOrUpdateCommessaCliente', insOrUpdCommessaClient
 
 function insOrUpdCommessaCliente(req, res){
 	commessaClienteService.addOrUpdateCommessaCliente(req.body).then(function(commessa){
-		console.log("SONO NEL CONTROLLER")
 		res.send(commessa);
 	}).catch(function (err) {
        	res.status(400).send(err);

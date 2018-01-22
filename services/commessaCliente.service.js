@@ -10,7 +10,6 @@ serviceCommessaCliente.addOrUpdateCommessaCliente = addOrUpdateCommessaCliente;
 
 function addOrUpdateCommessaCliente(params) {
     
-    console.log(params);
     let deferred = Q.defer();
 
     let newCommessaCliente = new CommessaCliente(params);
