@@ -26,24 +26,24 @@ function authenticate(username, password) {
     console.log("richiesto username " + username)
     var deferred = Q.defer();
     var userSelected = {};
-    User.findOne({"username":{$eq : username}})
+    User.findOne({ "username": { $eq: username } })
         .populate("clienti.cliente")
         .exec((err, user) => {
-        if (err) {
-            deferred.reject(err.name + ': ' + err.message);
-        } else {
-            console.log(config.secret);
-            if (user && bcrypt.compareSync(password, user.password)) {
-                //aggiungo il token
-                userSelected = JSON.parse(JSON.stringify(user));
-                userSelected.token = jwt.sign({ sub: userSelected._id }, config.secret);
-                console.log(userSelected);
-                deferred.resolve(userSelected)
+            if (err) {
+                deferred.reject(err.name + ': ' + err.message);
             } else {
-                deferred.resolve();
+                console.log(config.secret);
+                if (user && bcrypt.compareSync(password, user.password)) {
+                    //aggiungo il token
+                    userSelected = JSON.parse(JSON.stringify(user));
+                    userSelected.token = jwt.sign({ sub: userSelected._id }, config.secret);
+                    console.log(userSelected);
+                    deferred.resolve(userSelected)
+                } else {
+                    deferred.resolve();
+                }
             }
-        }
-    });
+        });
 
     return deferred.promise;
 }
@@ -79,45 +79,45 @@ function getUsersByManager(userLogged) {
     console.log('userLogged ' + userLogged);
 
     var query = [
-        {				
+        {
             $project:
             {
-                isAdmin : "$isAdmin",
+                isAdmin: "$isAdmin",
                 clienti: {
                     $filter: {
                         input: '$clienti',
                         as: 'item',
-                        cond: {$eq: ['$$item.profilo', 'AP']} 
-                    }	
+                        cond: { $eq: ['$$item.profilo', 'AP'] }
+                    }
                 }
             }
         },
         {
-            $match:{
+            $match: {
                 "_id": mongoose.Types.ObjectId(userLogged)
             }
         },
         {
-            $unwind : {
+            $unwind: {
                 path: '$clienti',
                 preserveNullAndEmptyArrays: true
             }
         },
         {
-            $project:{
+            $project: {
                 isAdmin: '$isAdmin',
                 cliente: '$clienti.cliente',
-            }	
+            }
         },
         {
-            $group : {
-                _id : "$_id",
-                isAdmin : {
-                    $last : '$isAdmin',
+            $group: {
+                _id: "$_id",
+                isAdmin: {
+                    $last: '$isAdmin',
                 },
-                clienti : {
-                    $push : 
-                        '$cliente'
+                clienti: {
+                    $push:
+                    '$cliente'
                 }
             }
         }
@@ -129,35 +129,35 @@ function getUsersByManager(userLogged) {
         }
         else {
             console.log("userManager, err: " + userManager + "----" + err);
-            if(userManager[0] != null){
+            if (userManager[0] != null) {
                 console.log("userManager[0].isAdmin: " + userManager[0].isAdmin);
-            
-                if(userManager[0].isAdmin == true){
+
+                if (userManager[0].isAdmin == true) {
                     User.find()
-                    .populate("clienti.cliente")
-                    .exec(function (err, users) {
-                        if (err) {
-                            deferred.reject(err.name + ': ' + err.message);
-                        } else {
-                            console.log("service" + users);
-                            deferred.resolve(users);
-                        }
-                    });       
-                }
-                else{
-                    User.find({"clienti": {"$elemMatch":{"cliente":{"$in": userManager[0].clienti}}} })
                         .populate("clienti.cliente")
-                        .exec( 
-                        function(err, users){
-                            if(err)
+                        .exec(function (err, users) {
+                            if (err) {
+                                deferred.reject(err.name + ': ' + err.message);
+                            } else {
+                                console.log("service" + users);
+                                deferred.resolve(users);
+                            }
+                        });
+                }
+                else {
+                    User.find({ "clienti": { "$elemMatch": { "cliente": { "$in": userManager[0].clienti } } } })
+                        .populate("clienti.cliente")
+                        .exec(
+                        function (err, users) {
+                            if (err)
                                 deferred.reject(err.name + ': ' + err.message);
                             else
                                 deferred.resolve(users);
                         });
-                    }
-                }else{
-                    console.log('User not retrieved!');
                 }
+            } else {
+                console.log('User not retrieved!');
+            }
         }
     });
     return deferred.promise;
@@ -235,91 +235,97 @@ function changeUserPwd(userLogged, oldPwd, newPwd) {
 
 //CRUD - CREATE UPDATE
 function insOrUpdUser(userParam) {
-    console.log("addUser "+userParam._id)
+    console.log("addUser " + userParam._id)
     var deferred = Q.defer();
-    
+
     let newUser = new User(userParam);
 
-    var query = {'_id':newUser._id};       
-    if (newUser.password!= null && !newUser.password.startsWith('$2a'))
+    var query = { '_id': newUser._id };
+    if (newUser.password != null && !newUser.password.startsWith('$2a'))
         newUser.password = bcrypt.hashSync(userParam.password, 10);
 
-    getUserById(newUser._id).then( user => {
+    getUserById(newUser._id).then(user => {
         //INSERT
-        if(user == null){
+        if (user == null) {
             countUsersByUsername(newUser.username).then(count => {
-                if (count == 0) 
-                    findOneAndUpdate(query, newUser).then( user => deferred.resolve(user) );
+                if (count == 0)
+                    findOneAndUpdate(query, newUser).then(user => deferred.resolve(user));
                 else
                     deferred.reject("Username non disponibile");
             });
         }
         //UPDATE
-        else{
-            if(count == 1){
-                getUserByUsername(newUser.username).then(userInEdit => {
-                    //CONFRONTO ID in input con ID oggetto già esistente in DB
-                    if(userInEdit._id.equals(newUser._id))
-                        findOneAndUpdate({_id: newUser.id}, newUser).then(res => deferred.resolve(res));
-                    else
-                        deferred.reject("Username non disponibile");
-                })
-            }
-            else
-                deferred.reject("Username non disponibile");
+        else {
+            countUsersByUsername(newUser.username).then(count => {
+                if (count == 1) {
+                    getUserByUsername(newUser.username).then(userInEdit => {
+                        //CONFRONTO ID in input con ID oggetto già esistente in DB
+                        if (userInEdit._id.equals(newUser._id))
+                            findOneAndUpdate({ _id: newUser.id }, newUser).then(res => deferred.resolve(res));
+                        else
+                            deferred.reject("Username non disponibile");
+                    })
+                }
+                else if(count == 0)
+                    findOneAndUpdate({ _id: newUser.id }, newUser).then(res => deferred.resolve(res));
+                else
+                    deferred.reject("Presenti duplicati");
+            });
         }
-    })    
-       
+    })
+
     return deferred.promise;
 }
 
-function findOneAndUpdate(query, newUser){
+function findOneAndUpdate(query, newUser) {
     var deferred = Q.defer();
-    User.findOneAndUpdate(query, newUser, {new: true, upsert:true})
-        .populate({ path:"clienti.cliente", 
-                    model: Cliente })
+    User.findOneAndUpdate(query, newUser, { new: true, upsert: true })
+        .populate({
+            path: "clienti.cliente",
+            model: Cliente
+        })
         .exec((err, user) => {
             if (err)
                 deferred.reject(err.name + ': ' + err.message);
             else
                 deferred.resolve(user);
-    });
+        });
     return deferred.promise;
 }
 
-function countUsersByUsername(username){
+function countUsersByUsername(username) {
     var deferred = Q.defer();
-    
-    User.find({"username" : username}).count( function(err, doc){
+
+    User.find({ "username": username }).count(function (err, doc) {
         if (err)
             deferred.reject(err.name + ': ' + err.message);
-        else 
+        else
             deferred.resolve(doc);
     });
 
     return deferred.promise;
 }
 
-function getUserById(id){
+function getUserById(id) {
     var deferred = Q.defer();
-    
-    User.findById({"_id" : id },function (err, cliente) {
+
+    User.findById({ "_id": id }, function (err, cliente) {
         if (err)
-            deferred.reject(err.name + ': ' + err.message);  
+            deferred.reject(err.name + ': ' + err.message);
         else
             deferred.resolve(cliente);
     });
-    
+
     return deferred.promise;
 }
 
-function getUserByUsername(username){
+function getUserByUsername(username) {
     var deferred = Q.defer();
-    
-    User.findOne({"username" : username}, function(err, doc){
+
+    User.findOne({ "username": username }, function (err, doc) {
         if (err)
             deferred.reject(err.name + ': ' + err.message);
-        else 
+        else
             deferred.resolve(doc);
     });
 
