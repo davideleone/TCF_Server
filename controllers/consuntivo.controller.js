@@ -10,7 +10,7 @@ routerConsuntivo.post('/consuntiviTraDate', getConsuntiviBetweenDates);
 //CRUD
 routerConsuntivo.post('/consuntiviUtente/', insOrUpdConsuntiviUtente); 			//CREATE-UPDATE
 routerConsuntivo.get('/consuntiviUtente/:id_user/:month/:year', getConsuntiviUtente);  //READ
-routerConsuntivo.delete('/consuntiviUtente/:id_user/:id_macro_area/:id_ambito/:id_attivita/:id_tipo_deliverable', delConsuntiviUtente);				//DELETE
+routerConsuntivo.delete('/delConsuntiviUtente/:dataInizio/:dataFine/:id_user/:id_macro_area/:id_ambito/:id_attivita/:id_tipo_deliverable', delConsuntiviUtente);				//DELETE
 routerConsuntivo.get('/reportAttivita/:id_cliente/:data_inizio/:data_fine', getReportAttivita);
 routerConsuntivo.get('/reportTotale/:id_cliente/:data_inizio/:data_fine', getReportTotale);
 routerConsuntivo.get('/reportTotale', getReportTotaleClone);
@@ -22,6 +22,8 @@ function addMeseConsuntivo(req, res){
             res.status(400).send(err);
         });	
 };
+
+
 
 function getMeseConsuntivoUtente(req, res){
 	consuntivoService.getConsuntiviUtente(req.params.idCliente, req.params.mese, req.params.anno ).then(function(consuntiviUtente){
@@ -82,10 +84,12 @@ function insOrUpdConsuntiviUtente(req, res){
 
 //CRUD - DELETE  multiple
 function delConsuntiviUtente(req, res){
-	consuntivoService.delConsuntiviUtente(	req.params.id_user, 
+	consuntivoService.delConsuntiviUtente(	req.params.dataInizio,
+											req.params.dataFine,
+											req.params.id_user, 
 											req.params.id_macro_area, 
 											req.params.id_ambito, 
-											req.params.id_attivita,
+										req.params.id_attivita,
 											req.params.id_tipo_deliverable 
 										).then(function(msg){
 		console.log("consuntivo.controller.delConsuntiviUtente: ok");

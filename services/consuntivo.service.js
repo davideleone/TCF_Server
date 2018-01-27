@@ -192,27 +192,34 @@ function insOrUpdConsuntiviUtente(consuntiviUtente) {
 }
 
 //OK
-function delConsuntiviUtente(id_user,
+function delConsuntiviUtente( dataInizio,
+    dataFine,
+    id_user,
     id_macro_area,
     id_ambito,
     id_attivita,
     id_tipo_deliverable) {
+
     var deferred = Q.defer();
     console.log("delConsuntivi");
+
     let consuntivo = new Consuntivo();
 
-    mongoose.set('debug', true);
-    consuntivo.remove({
-        "id_user": new Number(id_user),
-        "id_macro_area": new Number(id_macro_area),
-        "id_ambito": new Number(id_ambito),
-        "id_tipo_deliverable": new Number(id_tipo_deliverable)
-    }, function (err, doc) {
+    Consuntivo.remove({
+        "id_utente": id_user,
+        "id_macro_area": id_macro_area,
+        "id_ambito": id_ambito,
+        "id_tipo_deliverable": id_tipo_deliverable,
+        "data_consuntivo": {
+            $gte: new Date(dataInizio), $lte: new Date(dataFine)
+        }
+    }).exec((err, doc) => {
 
         if (err) {
             deferred.reject(err.name + ': ' + err.message);
         } else {
-            deferred.resolve({ msg: 'Consuntivi deleted successfully' });
+            deferred.resolve(doc);
+            //deferred.resolve({ msg: 'Consuntivi deleted successfully' });
         }
 
     });
