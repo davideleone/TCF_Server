@@ -335,7 +335,7 @@ function getReportAttivita(id_cliente, data_inizio, data_fine) {
                 data_inizio: "$_id.data_inizio",
                 data_fine: "$_id.data_fine"
             }
-        },
+        }
 
     ];
 
@@ -356,6 +356,7 @@ function getReportAttivita(id_cliente, data_inizio, data_fine) {
 function getReportTotale(id_cliente, data_inizio, data_fine) {
     var deferred = Q.defer();
     let consuntivo = new Consuntivo();
+
     mongoose.set('debug', true);
     var query = [
         // Stage 1
@@ -449,6 +450,7 @@ function getReportTotale(id_cliente, data_inizio, data_fine) {
                     type_of_work: "$nome_tipo_deliverable",
                     cognome: "$utente.cognome",
                     nome: "$utente.nome",
+                    note: "$note"
                 },
                 tot_ore: { $sum: "$ore" }
             }
@@ -469,13 +471,14 @@ function getReportTotale(id_cliente, data_inizio, data_fine) {
                 cognome: "$_id.cognome",
                 nome: "$_id.nome",
                 tot_ore: "$tot_ore",
+                tot_giorni: { $divide: [ "$tot_ore", 8 ] } ,
                 data_consuntivo: "$_id.data_consuntivo",
-
+                note: "$_id.note"
             }
         },
         {
             $match: {
-                "tot_ore": { $ne: 0 }
+                "tot_ore": { $ne: 0 },
             }
         }
 

@@ -14,7 +14,6 @@ module.exports = serviceReportistica;
 
 function getReportistica(params, res){
 	var deferred = Q.defer();
-
 	switch(params.type){
 		case 'r_totale':
 			consuntivoService.getReportTotale(params.clientId, params.start, params.end).then( res =>{
