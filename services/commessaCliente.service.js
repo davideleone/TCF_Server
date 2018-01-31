@@ -7,7 +7,7 @@ var serviceCommessaCliente= {};
 
 
 serviceCommessaCliente.addOrUpdateCommessaCliente = addOrUpdateCommessaCliente;
-
+serviceCommessaCliente.getCommessaAll = getCommessaAll;
 
 function addOrUpdateCommessaCliente(params) {
     
@@ -99,6 +99,17 @@ function getById(idParam) {
             deferred.resolve(Cliente);
     });
 
+    return deferred.promise;
+}
+
+function getCommessaAll(){
+    var deferred = Q.defer();
+    CommessaCliente.find({}, function(err, activity){
+        if(err)
+            deferred.reject(err.name + ': ' + err.message); 
+        else
+            deferred.resolve(activity);     
+    } );
     return deferred.promise;
 }
 

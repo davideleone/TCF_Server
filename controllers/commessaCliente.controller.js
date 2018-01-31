@@ -4,6 +4,7 @@ const routerCommessaCliente = express.Router();
 var commessaClienteService = require('services/commessaCliente.service');
 
 routerCommessaCliente.post('/addOrUpdateCommessaCliente', insOrUpdCommessaCliente);
+routerCommessaCliente.get('/commessaAll', getCommessaAll);
 
 
 function insOrUpdCommessaCliente(req, res){
@@ -14,6 +15,15 @@ function insOrUpdCommessaCliente(req, res){
     });	
 };
 
+
+function getCommessaAll(req, res){
+	commessaClienteService.getCommessaAll(req).then(function(attivita){
+		 res.send(attivita);
+	}).catch(function (err) {
+		res.status(400).send(err);
+    });
+	
+};
 
 
 module.exports = routerCommessaCliente;
