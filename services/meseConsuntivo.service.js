@@ -15,7 +15,7 @@ function insOrUpdMeseConsuntivoUtente(meseConsuntivoParam) {
     var deferred = Q.defer();
 
     let newMeseConsuntivo = new MeseConsuntivo(meseConsuntivoParam);
-    var query = {'_id':newMeseConsuntivo._id};
+    var query = {'_id': mongoose.Types.ObjectId(newMeseConsuntivo._id)};
     
     MeseConsuntivo.findOneAndUpdate(query, newMeseConsuntivo, {upsert:true}, function(err, doc){
         if (err){
